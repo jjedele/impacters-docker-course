@@ -1,0 +1,31 @@
+--- app.py	2021-06-12 18:07:53.000000000 +0200
++++ app_v2.py	2021-06-12 18:10:34.000000000 +0200
+@@ -2,20 +2,26 @@
+ from sys import argv
+ 
+ from flask import Flask
++import redis
+ 
+ 
+ # 1. Config
+ config = {
+-    "greeting": environ.get("GREETING", "Hello World")
++    "greeting": environ.get("GREETING", "Hello World"),
++    "redis_url": environ.get("REDIS_URL", "redis://localhost:6379")
+ }
+ 
+ 
+ # 2. App
+ app = Flask(__name__)
++redis_client = redis.from_url(config["redis_url"])
+ 
+ @app.route("/", methods=["GET"])
+ def index():
+-    return config["greeting"]
++    visited = redis_client.incr("visit_counter")
++    response = config["greeting"] + "\n"
++    response += f"I've been visited {visited} times."
++    return response
+ 
+ 
+ # 3. Entry Point
